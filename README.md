@@ -16,6 +16,29 @@ The model family rolls out in generations:
 
 ---
 
+## The website 🖥️
+
+Luno now ships with a real web chat interface (see [`web/`](web/)) — a clean,
+dark, ChatGPT/Claude-style experience: sidebar conversations, streaming
+responses with markdown + syntax-highlighted code, and a floating composer.
+It is a React + TypeScript app that talks to the **Luno API**.
+
+Two ways to use it:
+
+1. **Run everything locally** (recommended):
+   ```bash
+   cd web && npm install && npm run build   # one-time build of the UI
+   cd .. && python -m luno.cli serve        # serves UI + API together
+   ```
+   Then open **http://127.0.0.1:8787** — full app, fully local.
+
+2. **Via GitHub Pages** (host the UI; the model runs on your machine):
+   See [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+   and **docs/plan.md → “Hosting the website”** for the one-time setup. The
+   site auto-discovers your local Luno server at `http://localhost:8787`.
+
+---
+
 ## Status — read this first
 
 The repository is the **complete scaffold for Luno Zero 0.1**: the local
@@ -152,7 +175,7 @@ luno/
   family.py                # the Zero / Mist / Strato model registry
   model_loader.py          # model name -> running engine (auto weight detection)
   schema.py                # API request/response models
-  server.py                # local HTTP API (stdlib or FastAPI)
+  server.py                # local HTTP API (stdlib or FastAPI) + serves the web UI
   engines/
     minizero.py            # built-in starter engine (zero dependencies)
     llama.py               # real GGUF weights via llama.cpp
@@ -161,8 +184,16 @@ luno/
     train.py               # from-scratch transformer training (NumPy backprop)
     data.py                # corpus + tokenizer helpers
   data/sneeze.txt          # tiny cleared demo corpus for the trainer
-tests/                     # pytest suite (28 tests, no external deps)
+web/                       # the chat website (React + TypeScript + Vite)
+  src/
+    components/            # Sidebar, ChatView, Composer, Message, CodeBlock, …
+    hooks/                 # conversations, chat streaming, API status
+    lib/                   # API client, local persistence
+  index.html
+  vite.config.ts
+tests/                     # pytest suite (no external deps)
 docs/plan.md               # the roadmap to a truly smart Luno
+.github/workflows/         # CI: deploy the site to GitHub Pages
 ```
 
 ## Testing

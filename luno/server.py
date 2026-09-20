@@ -21,6 +21,7 @@ import json
 import logging
 import threading
 import time
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 from luno import __version__, config
@@ -177,6 +178,70 @@ def _handle_stream(loaded: LoadedModel, body: dict[str, Any]):
 
 
 # --------------------------------------------------------------------------
+# CORS + static assets
+# --------------------------------------------------------------------------
+
+def _cors_headers() -> list[tuple[str, str]]:
+    """Allow the Luno web UI (GitHub Pages / vite dev) to call this API.
+
+    Luno is a local-first assistant: the API talks to the model on your
+    machine, and the browser UI may be served from another origin (e.g.
+    github.io), so we accept cross-origin calls from anywhere.
+    """
+    return [
+        ("Access-Control-Allow-Origin", "*"),
+        ("Access-Control-Allow-Methods", "GET, POST, OPTIONS"),
+        ("Access-Control-Allow-Headers", "Content-Type, Authorization"),
+        ("Access-Control-Max-Age", "86400"),
+    ]
+
+
+def _web_dist() -> Path:
+    """Path to the built web UI (web/dist), if present."""
+    return Path(__file__).resolve().parent.parent / "web" / "dist"
+
+
+def _web_available() -> bool:
+    return (_web_dist() / "index.html").exists()
+
+
+_MIME = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".mjs": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".ico": "image/x-icon",
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".txt": "text/plain; charset=utf-8",
+}
+
+
+def _serve_static(path: str) -> Optional[tuple[str, list[tuple[str, str]], bytes]]:
+    """Serve a file from the built web UI (SPA-style index fallback)."""
+    dist = _web_dist()
+    rel = path.lstrip("/") or "index.html"
+    # SPA fallback: unknown paths without an extension resolve to index.html.
+    if rel in ("/", ""):
+        candidate = dist / "index.html"
+    else:
+        candidate = dist / rel
+        if not candidate.exists() and "." not in rel.split("/")[-1]:
+            candidate = dist / "index.html"
+    if not candidate.exists() or not candidate.is_file():
+        return None
+    if not candidate.resolve().is_relative_to(dist.resolve()):
+        return None  # never serve files outside the dist directory
+    mime = _MIME.get(candidate.suffix, "application/octet-stream")
+    return "200 OK", [("Content-Type", mime)], candidate.read_bytes()
+
+
+# --------------------------------------------------------------------------
 # HTTP errors
 # --------------------------------------------------------------------------
 
@@ -247,6 +312,9 @@ def build_app(
 
     try:  # pragma: no cover - fastapi path when installed
         import fastapi  # type: ignore
+        from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+        from fastapi.responses import FileResponse  # type: ignore
+        from fastapi.staticfiles import StaticFiles  # type: ignore
 
         fapp = fastapi.FastAPI(
             title="Luno API",
@@ -254,8 +322,19 @@ def build_app(
             version=__version__,
         )
 
+        fapp.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=False,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
         @fapp.get("/")
         def f_root():
+            # Serve the built web UI when present, else the API info.
+            if _web_available():
+                return FileResponse(str(_web_dist() / "index.html"))
             return info_response(loaded)
 
         @fapp.get("/health")
@@ -281,6 +360,18 @@ def build_app(
                 raise fastapi.HTTPException(status_code=400, detail=str(exc)) from exc
 
         fapp.state.loaded = loaded
+
+        # Mount the web UI assets (kept out of the way of the API routes).
+        if _web_available():
+            fapp.mount("/assets", StaticFiles(directory=str(_web_dist() / "assets")), name="assets")
+
+            @fapp.get("/{full_path:path}")
+            def f_spa(full_path: str):
+                candidate = (_web_dist() / full_path).resolve()
+                if candidate.is_file() and candidate.is_relative_to(_web_dist().resolve()):
+                    return FileResponse(str(candidate))
+                return FileResponse(str(_web_dist() / "index.html"))
+
         return fapp
     except ImportError:
         return _stdlib_app(api)
@@ -291,10 +382,13 @@ def _stdlib_app(api: LunoApi):
     def app(environ: dict, start_response: Callable) -> list[bytes]:
         method = environ.get("REQUEST_METHOD", "GET")
         path = environ.get("PATH_INFO", "/")
-        body = b""
-        content_length = int(environ.get("CONTENT_LENGTH") or 0)
-        if content_length:
-            body = environ["wsgi.input"].read(content_length)
+
+        cors_hdrs = _cors_headers()
+
+        # Preflight.
+        if method == "OPTIONS":
+            start_response("204 No Content", cors_hdrs)
+            return []
 
         handler = None
         for route_method, route_path, fn in api.routes:
@@ -302,53 +396,68 @@ def _stdlib_app(api: LunoApi):
                 handler = fn
                 break
 
-        if handler is None:
-            start_response("404 Not Found", [("Content-Type", "application/json")])
-            return [json.dumps({"error": "not_found"}).encode()]
+        # API routes win over the SPA. Exception: GET / serves the web UI
+        # when it is built (the API info stays available at /health).
+        if handler is not None and not (method == "GET" and path == "/" and _web_available()):
+            body = b""
+            content_length = int(environ.get("CONTENT_LENGTH") or 0)
+            if content_length:
+                body = environ["wsgi.input"].read(content_length)
 
-        try:
-            payload = {}
-            if body:
-                payload = json.loads(body.decode("utf-8"))
+            try:
+                payload = {}
+                if body:
+                    payload = json.loads(body.decode("utf-8"))
 
-            # Attach json_body so handlers stay uniform.
-            req = type("Req", (), {"json_body": payload})()
+                # Attach json_body so handlers stay uniform.
+                req = type("Req", (), {"json_body": payload})()
 
-            result = handler(req)
+                result = handler(req)
 
-            # Streaming path -> SSE.
-            if hasattr(result, "__iter__") and not isinstance(result, (dict, list, bytes, str)):
+                # Streaming path -> SSE.
+                if hasattr(result, "__iter__") and not isinstance(result, (dict, list, bytes, str)):
+                    start_response(
+                        "200 OK",
+                        [("Content-Type", "text/event-stream"), ("Cache-Control", "no-cache")] + cors_hdrs,
+                    )
+                    return [
+                        ("data: " + json.dumps(chunk) + "\n\n").encode("utf-8")
+                        for chunk in result
+                    ]
+
+                data = json.dumps(result).encode("utf-8")
                 start_response(
                     "200 OK",
-                    [("Content-Type", "text/event-stream"), ("Cache-Control", "no-cache")],
+                    [("Content-Type", "application/json"), ("Content-Length", str(len(data)))] + cors_hdrs,
                 )
-                return [
-                    ("data: " + json.dumps(chunk) + "\n\n").encode("utf-8")
-                    for chunk in result
-                ]
+                return [data]
+            except HTTPError as exc:
+                reason = {
+                    400: "400 Bad Request",
+                    404: "404 Not Found",
+                    405: "405 Method Not Allowed",
+                    500: "500 Internal Server Error",
+                }.get(exc.status, f"{exc.status} Error")
+                start_response(
+                    reason,
+                    [("Content-Type", "application/json")] + cors_hdrs,
+                )
+                return [json.dumps({"error": exc.message}).encode()]
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("Unhandled error handling %s %s", method, path)
+                start_response("500 Internal Server Error", [("Content-Type", "application/json")] + cors_hdrs)
+                return [json.dumps({"error": str(exc)}).encode()]
 
-            data = json.dumps(result).encode("utf-8")
-            start_response(
-                "200 OK",
-                [("Content-Type", "application/json"), ("Content-Length", str(len(data)))],
-            )
-            return [data]
-        except HTTPError as exc:
-            reason = {
-                400: "400 Bad Request",
-                404: "404 Not Found",
-                405: "405 Method Not Allowed",
-                500: "500 Internal Server Error",
-            }.get(exc.status, f"{exc.status} Error")
-            start_response(
-                reason,
-                [("Content-Type", "application/json")],
-            )
-            return [json.dumps({"error": exc.message}).encode()]
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("Unhandled error handling %s %s", method, path)
-            start_response("500 Internal Server Error", [("Content-Type", "application/json")])
-            return [json.dumps({"error": str(exc)}).encode()]
+        # Serve the built web UI when present (GET only).
+        if method == "GET" and _web_available():
+            static = _serve_static(path)
+            if static is not None:
+                status, headers, data = static
+                start_response(status, headers + cors_hdrs)
+                return [data]
+
+        start_response("404 Not Found", [("Content-Type", "application/json")] + cors_hdrs)
+        return [json.dumps({"error": "not_found"}).encode()]
 
     app._luno_routes = api.routes  # for tests/introspection
     return app

@@ -10,7 +10,7 @@ from luno import __version__
 from luno.engines.minizero import MiniZeroEngine
 from luno.family import get_model
 from luno.model_loader import LoadedModel
-from luno.server import build_app
+from luno.server import _web_available, build_app
 
 
 @pytest.fixture()
@@ -44,11 +44,15 @@ def _call(app, method, path, body=None):
 def test_info_root(app):
     status, payload = _call(app, "GET", "/")
     assert status == "200 OK"
-    data = json.loads(payload)
-    assert data["app"] == "LunoAI"
-    assert data["version"] == __version__
-    assert data["model"] == "luno-zero-0.1"
-    assert data["free"] is True and data["local"] is True
+    # With a built web UI present, "/" serves the site; otherwise the API info.
+    if _web_available():
+        assert b"<!doctype html" in payload.lower() or b"<html" in payload.lower()
+    else:
+        data = json.loads(payload)
+        assert data["app"] == "LunoAI"
+        assert data["version"] == __version__
+        assert data["model"] == "luno-zero-0.1"
+        assert data["free"] is True and data["local"] is True
 
 
 def test_health(app):
@@ -100,6 +104,29 @@ def test_chat_streaming(app):
     assert chunks[0]["object"] == "chat.completion.chunk"
 
 
-def test_unknown_route_404(app):
+def test_cors_headers_present(app):
+    environ = {
+        "REQUEST_METHOD": "OPTIONS",
+        "PATH_INFO": "/v1/chat/completions",
+        "wsgi.input": type("IO", (), {"read": lambda self, n: b""})(),
+        "CONTENT_LENGTH": "0",
+    }
+    headers = {}
+
+    def start_response(status, hdrs):
+        headers["status"] = status
+        headers.update(dict(hdrs))
+
+    app(environ, start_response)
+    assert headers["status"] == "204 No Content"
+    assert headers.get("Access-Control-Allow-Origin") == "*"
+
+
+def test_unknown_route(app):
     status, payload = _call(app, "GET", "/nope")
-    assert status == "404 Not Found"
+    if _web_available():
+        # SPA fallback serves the UI for client-side routes.
+        assert status == "200 OK"
+        assert b"<!doctype html" in payload.lower() or b"<html" in payload.lower()
+    else:
+        assert status == "404 Not Found"

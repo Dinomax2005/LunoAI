@@ -65,7 +65,47 @@ and Luno serves it immediately — zero code changes.
 - **Strato** — the flagship; target best-in-class local coding across
   languages, tool use, and longer context.
 
-## 4. Running the real model (today's installer)
+## 4. Hosting the website
+
+The chat UI in [`web/`](../web) is a static React app. You have two ways to
+reach it through the browser:
+
+### A. Fully local (nothing to set up on GitHub)
+
+```bash
+cd web && npm install && npm run build   # build once
+python -m luno.cli serve                 # serves UI + API together
+```
+
+Open **http://127.0.0.1:8787** — the UI and the model run on your machine.
+
+### B. GitHub Pages (host the UI, run the model at home)
+
+1. Make the repo **public** (Settings → General → Danger zone → Change
+   visibility). Pages on private repos is a paid GitHub feature; public is
+   free.
+2. Settings → **Pages** → Source: **GitHub Actions**.
+3. Push to `main` — the workflow
+   [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml)
+   builds and publishes the site to
+   `https://<you>.github.io/LunoAI/`.
+
+Then, on the machine that runs Luno:
+
+```bash
+python -m luno.cli serve        # local API on http://127.0.0.1:8787
+```
+
+Open the Pages URL and send a message. The site **auto-discovers your local
+server** at `http://localhost:8787` (browsers allow localhost from HTTPS
+pages), or click the connection pill (top right) to point it at any address
+— a LAN IP, `127.0.0.1:8787`, or a tunnel like Cloudflare's.
+
+> Why this works without a hosted backend: the model is *yours*, running on
+> *your* machine. GitHub Pages only hosts the static interface. Nothing about
+> your conversations or model is ever uploaded to a paid service.
+
+## 5. Running the real model (today's installer)
 
 ```bash
 # 1) get or build weights
@@ -88,7 +128,7 @@ Rename list when Hugging Face is reachable:
 `snapshot_download` any GGUF → move into the path above. Luno needs no
 network at inference time.
 
-## 5. Hardware guidance
+## 6. Hardware guidance
 
 | Your machine          | Realistic local model size | Notes                                |
 |:----------------------|:---------------------------|:-------------------------------------|
@@ -97,14 +137,14 @@ network at inference time.
 | Apple Silicon 16 GB   | 7B–13B class               | Metal-accelerated, very usable       |
 | Big PC / 24 GB VRAM   | 13B+ class                 | Near-Strato territory                |
 
-## 6. What "done" looks like for each model
+## 7. What "done" looks like for each model
 
 - [ ] **Zero 0.1** — real GGUF weights published under a clear, permissive
       license with training data cards.
 - [ ] **Mist 0.1** — stronger reasoning selfbench; published weights + evals.
 - [ ] **Strato 0.1** — flagship weights + evals + tool/API use.
 
-## 7. Contributions & rules of the road
+## 8. Contributions & rules of the road
 
 - Model weights must carry a **permissive, real license** (Apache-2.0 /
   MIT-style) so Luno stays genuinely free.
