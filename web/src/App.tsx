@@ -43,8 +43,7 @@ export default function App() {
   const messages = activeConversation?.messages ?? [];
 
   const handleSend = async (raw: string) => {
-    const model = activeConversation?.model ?? "luno-zero-0.1";
-    await send(raw, { conversation: activeConversation, appendMessages, patchMessage }, model);
+    await send(raw, { conversation: activeConversation, appendMessages, patchMessage });
   };
 
   const handleNewChat = () => {
@@ -119,7 +118,7 @@ export default function App() {
                 ? "Luno (local)"
                 : apiStatus === "checking"
                 ? "Checking…"
-                : "No connection"}
+                : "Luno (built-in)"}
             </button>
             {connOpen && (
               <div className="conn-popover">

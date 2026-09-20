@@ -84,8 +84,8 @@ export default function Composer({ onSend, onStop, status, disabled }: ComposerP
         </div>
       </div>
       <p className="composer-caption">
-        Luno can make mistakes. It runs on your machine — start the local server with{" "}
-        <code>luno serve</code> to chat.
+        Luno can make mistakes. It answers instantly in this page — for the full model, run{" "}
+        <code>luno serve</code> on your machine.
       </p>
     </div>
   );

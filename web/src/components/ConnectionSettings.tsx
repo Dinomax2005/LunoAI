@@ -59,8 +59,9 @@ export function ConnectionSettings({ status, base, onApply }: ConnectionSettings
         Reset to automatic discovery
       </button>
       <p className="conn-help">
-        Tip: run <code>luno serve</code> on your computer, then connect the
-        site to <code>http://localhost:8787</code>.
+        No setup needed: Luno answers with its built-in engine right in this
+        page. For the full local model, run <code>luno serve</code> on your
+        machine and connect to <code>http://localhost:8787</code>.
       </p>
     </div>
   );

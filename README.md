@@ -23,19 +23,24 @@ dark, ChatGPT/Claude-style experience: sidebar conversations, streaming
 responses with markdown + syntax-highlighted code, and a floating composer.
 It is a React + TypeScript app that talks to the **Luno API**.
 
-Two ways to use it:
+**Zero installs — just open it.** The site includes a built-in **Mini Zero**
+engine that runs *inside the page*, so it answers right away with no
+downloads and no server. Point it at a real Luno model for the full thing.
 
-1. **Run everything locally** (recommended):
+Two ways to reach it:
+
+1. **Via GitHub Pages** (nothing to install at all):
+   See [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+   and **docs/plan.md → “Hosting the website”**. The hosted page answers
+   instantly with the built-in engine, and auto-discovers your local
+   `luno serve` at `http://localhost:8787` for the full model.
+
+2. **Fully local** (UI + model on your machine):
    ```bash
    cd web && npm install && npm run build   # one-time build of the UI
    cd .. && python -m luno.cli serve        # serves UI + API together
    ```
-   Then open **http://127.0.0.1:8787** — full app, fully local.
-
-2. **Via GitHub Pages** (host the UI; the model runs on your machine):
-   See [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-   and **docs/plan.md → “Hosting the website”** for the one-time setup. The
-   site auto-discovers your local Luno server at `http://localhost:8787`.
+   Then open **http://127.0.0.1:8787**.
 
 ---
 

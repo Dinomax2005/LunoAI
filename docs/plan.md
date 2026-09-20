@@ -101,6 +101,11 @@ server** at `http://localhost:8787` (browsers allow localhost from HTTPS
 pages), or click the connection pill (top right) to point it at any address
 — a LAN IP, `127.0.0.1:8787`, or a tunnel like Cloudflare's.
 
+> **No server at all?** The hosted page still answers instantly: it ships
+> with the *Mini Zero* engine compiled into the JavaScript, so "just open it
+> and use the model" works with zero installs. Connect a real model when you
+> want the full thing.
+
 > Why this works without a hosted backend: the model is *yours*, running on
 > *your* machine. GitHub Pages only hosts the static interface. Nothing about
 > your conversations or model is ever uploaded to a paid service.
