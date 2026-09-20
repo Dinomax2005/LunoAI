@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lunoai"
+version = "0.1.0"
+description = "Luno — a free, local, personal AI by Dinomax2005. Runs its own model on your PC with no server and no external API."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Dinomax2005" }]
+keywords = ["ai", "llm", "local", "offline", "coding", "assistant", "free"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# The core of Luno runs on the Python standard library only (always free,
+# always works). Optional extras below unlock bigger local models / fancier serving.
+dependencies = []
+
+[project.optional-dependencies]
+# Nicer production HTTP server
+server = ["fastapi>=0.100", "uvicorn>=0.23"]
+# Run real transformer weights (Luno Zero 0.1 full) with PyTorch
+llm = ["torch>=2.1", "transformers>=4.36", "accelerate>=0.25"]
+# Run GGUF weights with llama.cpp (fast GPU offload, quantized models)
+llama = ["llama-cpp-python>=0.2"]
+# Everything for development
+dev = ["pytest>=7", "httpx>=0.24"]
+all = ["lunoai[server,llm,llama,dev]"]
+
+[project.scripts]
+luno = "luno.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["luno*"]
+
+[tool.setuptools.package-data]
+luno = ["data/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
