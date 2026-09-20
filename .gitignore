@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Model weights (large binaries — keep out of Git)
+models/
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.ckpt
+!luno/data/*.txt
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Local Luno home dir if people keep it inside the repo
+.luno/

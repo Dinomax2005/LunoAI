@@ -1,0 +1,70 @@
+/* Luno code theme — a quiet monochrome-violet palette on near-black. */
+
+.code-pre .hljs {
+  color: #d6d6e0;
+  background: transparent;
+}
+
+.code-pre .hljs-comment,
+.code-pre .hljs-quote {
+  color: #6d6d78;
+  font-style: italic;
+}
+
+.code-pre .hljs-keyword,
+.code-pre .hljs-selector-tag,
+.code-pre .hljs-literal,
+.code-pre .hljs-doctag {
+  color: #c39bff;
+}
+
+.code-pre .hljs-string,
+.code-pre .hljs-regexp,
+.code-pre .hljs-addition {
+  color: #8fd6a2;
+}
+
+.code-pre .hljs-number,
+.code-pre .hljs-symbol,
+.code-pre .hljs-bullet,
+.code-pre .hljs-link {
+  color: #f0a97a;
+}
+
+.code-pre .hljs-title,
+.code-pre .hljs-section,
+.code-pre .hljs-function .hljs-title,
+.code-pre .hljs-attr {
+  color: #9fb8ff;
+}
+
+.code-pre .hljs-variable,
+.code-pre .hljs-template-variable,
+.code-pre .hljs-name,
+.code-pre .hljs-type {
+  color: #e8a5d4;
+}
+
+.code-pre .hljs-attribute,
+.code-pre .hljs-built_in,
+.code-pre .hljs-class .hljs-title {
+  color: #8fd0e8;
+}
+
+.code-pre .hljs-meta,
+.code-pre .hljs-meta .hljs-keyword,
+.code-pre .hljs-params {
+  color: #a8a8b0;
+}
+
+.code-pre .hljs-emphasis {
+  font-style: italic;
+}
+
+.code-pre .hljs-strong {
+  font-weight: 650;
+}
+
+.code-pre .hljs-deletion {
+  color: #ff9d9d;
+}
