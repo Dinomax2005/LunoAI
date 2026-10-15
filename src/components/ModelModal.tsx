@@ -126,10 +126,10 @@ export default function ModelModal({ settings, onChange, onClose }: Props) {
           <div className="modal-section think-section">
             <label className="field-label"><Brain size={14} /> Thinking mode</label>
             <div className="segmented">
-              <button className={settings.thinkMode === "fast" ? "on" : ""} onClick={() => set({ thinkMode: "fast" })}>⚡ Fast<small>One pass, instant</small></button>
-              <button className={settings.thinkMode === "deep" ? "on" : ""} onClick={() => set({ thinkMode: "deep" })}>🧠 Deep Think<small>Plan → draft → verify → final</small></button>
+              <button className={settings.thinkMode === "fast" ? "on" : ""} onClick={() => set({ thinkMode: "fast" })}>Fast<small>One pass, instant</small></button>
+              <button className={settings.thinkMode === "deep" ? "on" : ""} onClick={() => set({ thinkMode: "deep" })}>Deep think<small>Plan → draft → verify → final</small></button>
             </div>
-            <p className="field-note">Deep Think is Luno's secret weapon: it catches the arithmetic slips, logic traps and code bugs that make raw free models look dumb. Slower, much smarter. Use it for anything hard.</p>
+            <p className="field-note">Deep think catches the arithmetic slips, logic traps and code bugs that make raw free models look dumb. Slower, much smarter. Use it for anything hard.</p>
             <label className="toggle-row">
               <input type="checkbox" checked={settings.toolsEnabled} onChange={(e) => set({ toolsEnabled: e.target.checked })} />
               <span><Wrench size={13} /> Tools: run draft code during verification</span>

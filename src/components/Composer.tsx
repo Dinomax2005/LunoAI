@@ -39,7 +39,7 @@ export default function Composer({ streaming, onSend, onStop }: Props) {
               submit();
             }
           }}
-          placeholder="Ask Luno anything — maths, code, essays, big questions…"
+          placeholder="How can I help you today?"
           rows={1}
           autoFocus
         />
@@ -49,7 +49,7 @@ export default function Composer({ streaming, onSend, onStop }: Props) {
           <button className="send-btn" onClick={submit} disabled={!value.trim()} title="Send (Enter)"><ArrowUp size={18} /></button>
         )}
       </div>
-      <div className="composer-hint">Enter to send · Shift+Enter for a new line · Luno can make mistakes — Deep Think + tools verify the important stuff</div>
+      <div className="composer-hint">Luno can make mistakes. Deep think and the built-in tools double-check the important parts.</div>
     </div>
   );
 }

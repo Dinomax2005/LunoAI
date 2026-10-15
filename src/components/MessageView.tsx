@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
-import { Bot, Brain, Check, ChevronDown, Copy, Loader2, Play, User } from "lucide-react";
+import { Check, ChevronDown, Copy, Loader2, Moon, Play } from "lucide-react";
 import type { ChatMessage } from "../types";
 import { runJavaScript, runPython } from "../lib/codeGen";
 
@@ -66,7 +66,6 @@ function MessageViewBase({ message, streaming }: { message: ChatMessage; streami
   if (isUser) {
     return (
       <div className="msg-row user">
-        <div className="avatar user-avatar"><User size={16} /></div>
         <div className="bubble user-bubble">{message.content}</div>
       </div>
     );
@@ -74,13 +73,12 @@ function MessageViewBase({ message, streaming }: { message: ChatMessage; streami
 
   return (
     <div className="msg-row assistant">
-      <div className="avatar ai-avatar"><Bot size={16} /></div>
       <div className="bubble ai-bubble">
-        {message.engine && <div className="engine-tag">{message.engine}</div>}
+        {message.engine && <div className="engine-tag"><Moon size={11} /> {message.engine}</div>}
         {message.thinking && (
           <div className="thinking">
             <button className="thinking-head" onClick={() => setThinkOpen((v) => !v)}>
-              <Brain size={14} /> Thought process <ChevronDown size={14} className={thinkOpen ? "rot" : ""} />
+              Thought process <ChevronDown size={14} className={thinkOpen ? "rot" : ""} />
             </button>
             {thinkOpen && <div className="thinking-body">{message.thinking}</div>}
           </div>

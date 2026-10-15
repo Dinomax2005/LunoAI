@@ -1,12 +1,8 @@
-# Luno 🌙 — The Smartest Free AI
+# Luno — a free AI assistant
 
-> **Top-tier-class intelligence. $0 forever. No subscription. No paid API key. No account.**
+Luno is a free AI assistant that runs open models in your browser, or connects to free model tiers, and checks its own work before answering. No account, no subscription, no Luno server.
 
-Luno was rebuilt from scratch to do one thing: **give you frontier-style AI for free** — and prove it instead of promising it.
-
-Open it and chat instantly. Connect a free 70B-class giant (or run a real neural model on your own GPU, right in the tab) and Luno wraps it in **Deep Think** — plan → draft → verify with tools → final answer. That verification scaffolding, plus exact computation instead of guessed arithmetic, is how a free system competes with the paid frontier.
-
-**▶ Just open the app and ask something.** Maths, code, logic and knowledge work instantly with zero downloads.
+Open the site and ask something. Maths, code, logic and knowledge work immediately with zero downloads; connect a free 70B-class model (or run one locally on your GPU) for open-ended questions, and Deep Think will plan, draft, verify and correct the answer before you see it.
 
 ---
 
@@ -14,9 +10,9 @@ Open it and chat instantly. Connect a free 70B-class giant (or run a real neural
 
 | Tier | What it is | Cost | Setup |
 |---|---|---|---|
-| ⚡ **Luno Brain** (default) | Built-in exact tools: maths solver, code writer + **in-browser code runner**, logic-puzzle solver, sequences, statistics, unit conversion, summaries, writing drafts, curated knowledge | $0 | None. Works offline |
-| 💻 **Local Neural** | Real LLMs — Qwen 2.5 (1.5B/3B/7B), Llama 3.2 (1B/3B), Phi 3.5, Gemma 2 — running on **your GPU in this tab** via WebLLM/WebGPU | $0 | One download (0.7–4.3 GB, cached forever). No key, no server, private by design |
-| ☁️ **Free Cloud** | 70B-class giants via free tiers: **Groq** (Llama 3.3 70B, DeepSeek R1 Distill, QwQ), **OpenRouter** (DeepSeek V3/R1 `:free`, Llama 70B `:free`), **Hugging Face**, **Ollama** on your machine, or any OpenAI-compatible endpoint | $0 | Free key (~30 s) where required — stored **only in your browser** |
+| **Luno Brain** (default) | Built-in exact tools: maths solver, code writer + **in-browser code runner**, logic-puzzle solver, sequences, statistics, unit conversion, summaries, writing drafts, curated knowledge | $0 | None. Works offline |
+| **Local neural** | Real LLMs — Qwen 2.5 (1.5B/3B/7B), Llama 3.2 (1B/3B), Phi 3.5, Gemma 2 — running on **your GPU in this tab** via WebLLM/WebGPU | $0 | One download (0.7–4.3 GB, cached forever). No key, no server, private by design |
+| **Free cloud** | 70B-class giants via free tiers: **Groq** (Llama 3.3 70B, DeepSeek R1 Distill, QwQ), **OpenRouter** (DeepSeek V3/R1 `:free`, Llama 70B `:free`), **Hugging Face**, **Ollama** on your machine, or any OpenAI-compatible endpoint | $0 | Free key (~30 s) where required — stored **only in your browser** |
 
 Switch tiers any time from the model picker at the top. Your conversation history carries over to whichever brain you pick.
 

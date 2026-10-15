@@ -18,13 +18,13 @@ export interface ProviderInfo {
 export const PROVIDERS: ProviderInfo[] = [
   {
     id: "groq",
-    name: "Groq — Free Cloud ⚡",
-    tagline: "Llama 3.3 70B at blazing speed. Free tier, GPT-4-class on many tasks.",
+    name: "Groq — free cloud",
+    tagline: "Llama 3.3 70B on Groq's free tier. Fast, and the strongest free option here.",
     baseUrl: "https://api.groq.com/openai/v1",
     needsKey: true,
     keyUrl: "https://console.groq.com/keys",
     models: [
-      { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B Versatile ★ flagship free" },
+      { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B Versatile (recommended)" },
       { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant (fastest)" },
       { id: "deepseek-r1-distill-llama-70b", label: "DeepSeek R1 Distill 70B (reasoning)" },
       { id: "qwen-qwq-32b", label: "Qwen QwQ 32B (reasoning)" },
@@ -39,7 +39,7 @@ export const PROVIDERS: ProviderInfo[] = [
     needsKey: true,
     keyUrl: "https://openrouter.ai/keys",
     models: [
-      { id: "deepseek/deepseek-chat-v3-0324:free", label: "DeepSeek V3 :free ★" },
+      { id: "deepseek/deepseek-chat-v3-0324:free", label: "DeepSeek V3 (free tier)" },
       { id: "deepseek/deepseek-r1:free", label: "DeepSeek R1 :free (reasoning)" },
       { id: "meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B :free" },
       { id: "google/gemini-2.0-flash-exp:free", label: "Gemini 2.0 Flash Exp :free" },
@@ -86,7 +86,7 @@ export function providerInfo(id: ProviderId): ProviderInfo | undefined {
   return PROVIDERS.find((p) => p.id === id);
 }
 
-export const LUNO_SYSTEM_PROMPT = `You are Luno, the smartest free AI assistant. You compete on quality with the best paid models, so be genuinely excellent:
+export const LUNO_SYSTEM_PROMPT = `You are Luno, a free AI assistant. Answer as carefully as the best assistants do:
 
 - Think step by step internally before answering. Show clear reasoning for math, logic and code; verify calculations and mentally test code before presenting it.
 - Be accurate over confident: if you are unsure, say what you know, what you don't, and how to check. Never invent facts, citations, APIs or results.

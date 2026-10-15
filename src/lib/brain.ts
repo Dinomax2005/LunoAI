@@ -32,7 +32,7 @@ function lastUser(history: ChatMessage[]): string {
 }
 
 function engineLabel(s: ProviderSettings): string {
-  if (s.provider === "brain") return "Luno Brain · instant";
+  if (s.provider === "brain") return "Luno Brain (built-in tools)";
   if (s.provider === "webllm") return `${localModelLabel(s.webllmModel)} · local`;
   const info = providerInfo(s.provider);
   return `${s.cloudModel} · ${info?.name.split(" — ")[0] || s.provider}`;
@@ -169,19 +169,19 @@ function brainAnswer(promptRaw: string, history: ChatMessage[]): { text: string;
   // Greetings / social
   if (/^(hi|hello|hey|hiya|howdy|yo|good (morning|afternoon|evening))\b/.test(norm) && norm.split(" ").length <= 5) {
     trace.push("Classified as: greeting → friendly opener with suggestions.");
-    return done("Hello! 👋 I'm **Luno** — your free AI. Ask me anything:\n\n- 🧮 **Maths** — try `what is 144 / 12 + 7^2` or `solve 3x + 7 = 22`\n- 💻 **Code** — try `write a Python function to check if a number is prime` (then hit **Run** on the code)\n- 🧠 **Big questions** — connect a free 70B-class model from the model picker at the top for deep, open-ended answers\n- ✍️ **Writing** — try `write an email asking for a deadline extension`\n\nWhat shall we do first?");
+    return done("Hello — I'm **Luno**. I can help with most things you'd ask an assistant, and maths and code I compute exactly rather than guess.\n\nA few good starting points:\n\n- **Maths** — `what is 144 / 12 + 7^2`, or `solve 3x + 7 = 22`\n- **Code** — `write a Python function to check if a number is prime`, then press **Run** on the result\n- **Writing** — `write an email asking for a deadline extension`\n- **Open-ended questions** — pick a neural model from the menu at the top (they're all free)\n\nWhat would you like to do?");
   }
   if (/^(thanks|thank you|thx|ty|cheers)/.test(norm)) {
     trace.push("Classified as: thanks.");
-    return done("You're very welcome! 😊 Anything else — maths, code, writing, or a big question with a neural model connected?");
+    return done("You're welcome. Anything else — maths, code, writing, or something open-ended with a neural model connected?");
   }
   if (/\b(your name|who are you|what are you)\b/.test(low)) {
     trace.push("Classified as: identity question.");
-    return done("I'm **Luno** — the smartest free AI. I run in three tiers, all $0 forever:\n\n1. **Luno Brain** (what's answering right now) — instant, built-in tools for maths, code, logic and knowledge. Works with zero downloads, even offline.\n2. **Local neural models** — real LLMs (Qwen 2.5, Llama 3.2, Phi…) that download once and then run on *your* GPU, in this tab. Private forever.\n3. **Free cloud models** — 70B-class giants (Llama 3.3 70B, DeepSeek) via free tiers from Groq / OpenRouter / Hugging Face.\n\nOn top of every neural model I add **Deep Think** — plan → draft → verify → final — plus real tools (I compute maths exactly and can run code). That scaffolding is how a free system competes with the paid giants. Pick a model at the top to feel the difference.");
+    return done("I'm **Luno**, a free AI assistant. I run in three ways, and you can switch between them from the model menu:\n\n1. **Luno Brain** (what's answering right now) — instant, built-in tools for maths, code, logic and knowledge. Works with zero downloads, even offline.\n2. **Local neural models** — real LLMs (Qwen 2.5, Llama 3.2, Phi…) that download once and then run on *your* GPU, in this tab. Private forever.\n3. **Free cloud models** — 70B-class giants (Llama 3.3 70B, DeepSeek) via free tiers from Groq / OpenRouter / Hugging Face.\n\nOn top of every neural model I add **Deep Think** — plan → draft → verify → final — plus real tools (I compute maths exactly and can run code). Verification is most of what separates a careful answer from a confident one. Pick a model at the top whenever you're ready.");
   }
   if (/\b(help|what can you do|capabilities|how do you work)\b/.test(low) && norm.split(" ").length <= 10) {
     trace.push("Classified as: help / capabilities.");
-    return done("Here's what I do best — all free:\n\n| Ask me… | Example |\n|---|---|\n| 🧮 Any maths | `847 × 39`, `solve 2x + 4 = 18`, `average of 4, 8, 15, 16, 23, 42` |\n| 💻 Code (Python/JS) | `write a JavaScript debounce function` — then press **Run** |\n| 🔢 Sequences & logic | `what comes next: 2, 6, 12, 20, 30` |\n| 📚 Knowledge | `what is photosynthesis`, `capital of Australia` |\n| ✍️ Writing | `write a cover letter for a barista job` |\n| 📝 Summaries | `summarize: <paste a long text>` |\n| 🏆 Prove it | Open **Benchmark** (top bar) and watch me take a live test |\n\n**To unlock top-tier open-ended intelligence:** tap the model picker (top) → download **Qwen 2.5 3B** locally (free, private) or add a free **Groq** key for **Llama 3.3 70B**. Turn on **Deep Think** for hard questions.");
+    return done("Here's what I do well:\n\n| Ask for | Example |\n|---|---|\n| Maths | `847 × 39`, `solve 2x + 4 = 18`, `average of 4, 8, 15, 16, 23, 42` |\n| Code (Python or JavaScript) | `write a JavaScript debounce function` — then press **Run** |\n| Sequences and logic | `what comes next: 2, 6, 12, 20, 30` |\n| Knowledge | `what is photosynthesis`, `capital of Australia` |\n| Writing | `write a cover letter for a barista job` |\n| Summaries | `summarize: <paste a long text>` |\n\nFor open-ended questions I do better with a neural model connected: open the model menu at the top and either download **Qwen 2.5 3B** to run here in your browser, or add a free **Groq** key for **Llama 3.3 70B**. Leave thinking on **Deep** for anything difficult. There's also a **Benchmark** button at the top if you'd like to test me first.");
   }
   if (/\bjoke\b/.test(low)) {
     trace.push("Classified as: joke request.");
@@ -332,7 +332,7 @@ function brainAnswer(promptRaw: string, history: ChatMessage[]): { text: string;
     const gen = generateCode(prompt);
     if (gen) {
       trace.push(`Classified as: code request → generated ${gen.lang} from Luno's verified template library. Press Run to execute it right here.`);
-      return done(`${gen.explain}\n\n\`\`\`${gen.lang}\n${gen.code}\n\`\`\`\n\n▶️ Press **Run** above the code to execute it in your browser. Want it in ${gen.lang === "python" ? "JavaScript" : "Python"}, with tests, or extended (e.g. handle edge cases)? Just ask.`);
+      return done(`${gen.explain}\n\n\`\`\`${gen.lang}\n${gen.code}\n\`\`\`\n\nPress **Run** above the code to execute it in your browser. Want it in ${gen.lang === "python" ? "JavaScript" : "Python"}, with tests, or extended (e.g. handle edge cases)? Just ask.`);
     }
     trace.push("Classified as: open-ended code request → scaffolded solution; a neural model will write the full version.");
     const wantsJs = detectLangLow(low) === "javascript";
@@ -414,11 +414,11 @@ function brainAnswer(promptRaw: string, history: ChatMessage[]): { text: string;
   trace.push("Classified as: open-ended question → this is where neural models shine; Luno Brain gives a structured starting point and the honest fastest path to a full answer.");
   return done(
     `Great question — this one deserves a real neural model, and you can have the best free ones in under a minute:\n\n` +
-    `**Your fastest free upgrades (pick at the top):**\n` +
-    `1. **⚡ Groq · Llama 3.3 70B** — GPT-4-class on many tasks. Free key at console.groq.com (30 seconds), paste it in Settings.\n` +
-    `2. **💻 Qwen 2.5 3B · Local** — downloads once (~1.9 GB), then runs on your GPU forever. No key, no network, fully private.\n` +
+    `**To get a full answer, connect a free model (menu at the top):**\n` +
+    `1. **Groq — Llama 3.3 70B.** The strongest free option here. Free key at console.groq.com (30 seconds), paste it in Settings.\n` +
+    `2. **Qwen 2.5 3B, running locally** — downloads once (~1.9 GB), then runs on your GPU forever. No key, no network, fully private.\n` +
     `3. **OpenRouter · DeepSeek :free** — another free-key giant.\n\n` +
-    `Turn on **Deep Think** and I'll plan, draft, verify and correct myself before answering — that's the scaffolding that lets free models rival the paid frontier.\n\n` +
+    `Leave thinking on **Deep** and I'll plan, draft, verify and correct myself before answering.\n\n` +
     `Meanwhile, I *can* do this instantly right here: exact **maths** (\`solve 3x+7=22\`), runnable **code** (\`write a Python fibonacci function\`), **sequences**, **summaries** (\`summarize: …\`), **writing drafts**, and curated **knowledge** (\`what is a transformer\`). Try me on any of those — or connect a model and re-ask this exact question.`,
   );
 }
@@ -461,7 +461,7 @@ export async function generateAnswer(
 ): Promise<{ text: string; thinking: string; engine: string }> {
   if (s.provider === "brain") {
     const { text, thinking } = brainAnswer(lastUser(history), history);
-    return streamOut(text, thinking, "Luno Brain · instant", emit, signal);
+    return streamOut(text, thinking, "Luno Brain (built-in tools)", emit, signal);
   }
   return neuralAnswer(history, s, emit, signal);
 }

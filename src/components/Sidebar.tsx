@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { MessageSquare, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { Moon, PenSquare, Search, Trash2, X } from "lucide-react";
 import type { Conversation } from "../types";
 
 interface Props {
@@ -11,9 +11,10 @@ interface Props {
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
   onClearAll: () => void;
+  onHome: () => void;
 }
 
-export default function Sidebar({ conversations, activeId, open, onClose, onNew, onSelect, onDelete, onClearAll }: Props) {
+export default function Sidebar({ conversations, activeId, open, onClose, onNew, onSelect, onDelete, onClearAll, onHome }: Props) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -27,30 +28,25 @@ export default function Sidebar({ conversations, activeId, open, onClose, onNew,
       {open && <div className="scrim" onClick={onClose} />}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-top">
-          <div className="brand">
-            <div className="brand-orb" />
-            <div>
-              <div className="brand-name">Luno</div>
-              <div className="brand-sub">The smartest free AI</div>
-            </div>
-          </div>
+          <button className="wordmark" onClick={() => { onHome(); onClose(); }} aria-label="Luno home">
+            <Moon size={20} strokeWidth={2.2} /> Luno
+          </button>
           <button className="icon-btn mobile-only" onClick={onClose} aria-label="Close sidebar"><X size={18} /></button>
         </div>
 
         <button className="new-chat" onClick={() => { onNew(); onClose(); }}>
-          <Plus size={16} /> New chat
+          <PenSquare size={15} /> New chat
         </button>
 
         <div className="search-box">
           <Search size={14} />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search chats…" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search chats" />
         </div>
 
         <div className="conv-list">
-          {filtered.length === 0 && <div className="conv-empty">No chats yet.<br />Your conversations live here — stored only in this browser.</div>}
+          {filtered.length === 0 && <div className="conv-empty">No conversations yet. Everything you start is saved here, in this browser only.</div>}
           {filtered.map((c) => (
             <div key={c.id} className={`conv-item ${c.id === activeId ? "active" : ""}`} onClick={() => { onSelect(c.id); onClose(); }}>
-              <MessageSquare size={14} className="conv-icon" />
               <span className="conv-title">{c.title}</span>
               <button
                 className="conv-delete"
@@ -64,8 +60,8 @@ export default function Sidebar({ conversations, activeId, open, onClose, onNew,
         </div>
 
         <div className="sidebar-foot">
-          <div className="free-badge"><Sparkles size={13} /> $0 forever · no account · private</div>
-          {conversations.length > 0 && (
+          <div className="free-badge">Free to use. No account.<br />Chats never leave this browser.</div>
+          {conversations.length > 1 && (
             <button className="clear-all" onClick={onClearAll}>Delete all chats</button>
           )}
         </div>
