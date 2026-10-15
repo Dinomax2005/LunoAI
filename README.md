@@ -1,216 +1,101 @@
-# Luno 🚀
+# Luno — a free AI assistant
 
-> **Your own AI. Free. Local. No server. No API key.**
+Luno is a free AI assistant that runs open models in your browser, or connects to free model tiers, and checks its own work before answering. No account, no subscription, no Luno server.
 
-Luno is a personal AI by [Dinomax2005](https://github.com/Dinomax2005) that
-runs **its own model** on **your** computer. It is not a paid API client —
-the model is yours, the data stays on your machine, and it costs $0/month.
-
-The model family rolls out in generations:
-
-| Generation | Model          | Status      | What it will be                                   |
-|:-----------|:---------------|:------------|:--------------------------------------------------|
-| 1          | **Luno Zero**  | **0.1 — first model** | Small, fast, entirely local.                 |
-| 2          | **Luno Mist**  | planned     | Mid-size local model with stronger reasoning.     |
-| 3          | **Luno Strato**| planned     | The flagship — best-in-class local coding model.  |
+Open the site and ask something. Maths, code, logic and knowledge work immediately with zero downloads; connect a free 70B-class model (or run one locally on your GPU) for open-ended questions, and Deep Think will plan, draft, verify and correct the answer before you see it.
 
 ---
 
-## The website 🖥️
+## The three tiers of free intelligence
 
-Luno now ships with a real web chat interface (see [`web/`](web/)) — a clean,
-dark, ChatGPT/Claude-style experience: sidebar conversations, streaming
-responses with markdown + syntax-highlighted code, and a floating composer.
-It is a React + TypeScript app that talks to the **Luno API**.
+| Tier | What it is | Cost | Setup |
+|---|---|---|---|
+| **Luno Brain** (default) | Built-in exact tools: maths solver, code writer + **in-browser code runner**, logic-puzzle solver, sequences, statistics, unit conversion, summaries, writing drafts, curated knowledge | $0 | None. Works offline |
+| **Local neural** | Real LLMs — Qwen 2.5 (1.5B/3B/7B), Llama 3.2 (1B/3B), Phi 3.5, Gemma 2 — running on **your GPU in this tab** via WebLLM/WebGPU | $0 | One download (0.7–4.3 GB, cached forever). No key, no server, private by design |
+| **Free cloud** | 70B-class giants via free tiers: **Groq** (Llama 3.3 70B, DeepSeek R1 Distill, QwQ), **OpenRouter** (DeepSeek V3/R1 `:free`, Llama 70B `:free`), **Hugging Face**, **Ollama** on your machine, or any OpenAI-compatible endpoint | $0 | Free key (~30 s) where required — stored **only in your browser** |
 
-**Zero installs — just open it.** The site includes a built-in **Mini Zero**
-engine that runs *inside the page*, so it answers right away with no
-downloads and no server. Point it at a real Luno model for the full thing.
+Switch tiers any time from the model picker at the top. Your conversation history carries over to whichever brain you pick.
 
-Two ways to reach it:
+## Why Luno punches above its weight
 
-1. **Via GitHub Pages** (nothing to install at all):
-   See [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-   and **docs/plan.md → “Hosting the website”**. The hosted page answers
-   instantly with the built-in engine, and auto-discovers your local
-   `luno serve` at `http://localhost:8787` for the full model.
-
-2. **Fully local** (UI + model on your machine):
-   ```bash
-   cd web && npm install && npm run build   # one-time build of the UI
-   cd .. && python -m luno.cli serve        # serves UI + API together
-   ```
-   Then open **http://127.0.0.1:8787**.
-
----
-
-## Status — read this first
-
-The repository is the **complete scaffold for Luno Zero 0.1**: the local
-engine, the OpenAI-compatible API, the CLI, the model-family registry, and
-the from-scratch training pipeline are all here and working *today*.
-
-What ships out-of-the-box is the **Mini Zero** engine — a small, honest
-starter AI that runs with **zero downloads** so the whole project works on
-day one. It writes short Python functions, does arithmetic, and explains AI
-concepts. It is *not* the real Luno Zero 0.1 weights (and it says so
-clearly when it doesn't know something — it never pretends to be the full
-model).
-
-The moment real Luno Zero 0.1 weights (GGUF) are dropped into
-`~/.luno/models`, the **same** interface serves them with **no code change**:
-
-```
-engine: mini-zero            ─── install weights ───▶   engine: llama.cpp
-weights_loaded: False        ───     automatically    ─▶  weights_loaded: True
-```
-
-That swap is the whole point: Mini Zero proves the plumbing, and the real
-models make Luno *smart*.
-
----
+1. **It computes, it doesn't guess.** Arithmetic, equations (linear + quadratic), percentages, GCD/LCM, primality, statistics and sequences are solved by a real parser/solver (`src/lib/mathEngine.ts`) — exact answers, every time, with working shown.
+2. **It writes code, then runs it.** Python & JavaScript from a verified template library, plus a **Run** button on every code block (JS instantly; Python via Pyodide in-browser). Deep Think literally executes draft code and fixes what fails.
+3. **Deep Think verification.** For neural models: Luno plans the answer, drafts it, attacks its own draft as a strict verifier (with tool results attached), then writes the corrected final. Self-verification is the single biggest free upgrade to raw model quality.
+4. **Logic-trap immunity.** The classic traps (bat-and-ball, lily-pad doubling, widget rates) are solved algebraically with checks — try them.
+5. **Provable, not promised.** Hit **Benchmark** (top right) and watch Luno take a 15-question auto-graded test — maths, logic, code, knowledge — live in your browser.
 
 ## Quick start
 
-Luno's core needs **only Python 3.10+**. No pip installs, no model downloads,
-no keys.
+```bash
+npm install
+npm run dev        # → http://localhost:5173
+```
+
+That's it. Ask:
+
+- `What is 847 × 39?` · `Solve 3x + 7 = 22` · `Average of 4, 8, 15, 16, 23, 42`
+- `Write a Python function to check if a number is prime` → then press **Run**
+- `What comes next: 2, 6, 12, 20, 30?`
+- `A bat and a ball cost $1.10 in total…`
+- `Write an email asking for a deadline extension`
+- `Summarize: <paste a long text>`
+
+### Get the giants (free, ~30 seconds each)
+
+- **Groq** — free key at [console.groq.com/keys](https://console.groq.com/keys) → pick **Llama 3.3 70B Versatile**
+- **OpenRouter** — free key at [openrouter.ai/keys](https://openrouter.ai/keys) → pick **DeepSeek V3 :free** or **R1 :free**
+- **Hugging Face** — free token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+- **Local (no key at all)** — model picker → **Local Neural** → Qwen 2.5 3B (needs Chrome/Edge with WebGPU)
+- **Ollama** — `OLLAMA_ORIGINS=* ollama serve` + `ollama pull llama3.2`
+
+Turn on **🧠 Deep Think** for anything hard. Use **⚡ Fast** for quick chats.
+
+## Deploy it free (your own copy, forever)
+
+This repo auto-deploys to **GitHub Pages** on every push to `main` (`.github/workflows/deploy-pages.yml`):
+
+1. Repo **Settings → Pages → Source: GitHub Actions**
+2. Push to `main` — your Luno is live at `https://<you>.github.io/LunoAI/`
+
+Or host `npm run build` output (`dist/`) on Netlify, Vercel, Cloudflare Pages — any static host. There is no Luno server to pay for. Ever.
+
+## Privacy
+
+- No Luno account, no Luno backend, no telemetry, no analytics.
+- Chats and settings live in your browser's `localStorage` only.
+- Local models never send a byte anywhere. Cloud keys go only to the provider you selected, directly from your browser.
+
+## Development
 
 ```bash
-# chat with Luno (interactive)
-python -m luno.cli chat
-
-# one-shot questions
-python -m luno.cli ask "what is a transformer?"
-python -m luno.cli ask "what is 12 * 8 + 4?"
-
-# ask for code
-python -m luno.cli code "fibonacci in python"
-
-# list the model family
-python -m luno.cli models
-
-# start the local API
-python -m luno.cli serve
+npm run dev      # dev server (0.0.0.0:5173)
+npm run build    # typecheck + production build
+npm test         # brain / math / code / benchmark tests (node:test via tsx)
 ```
 
-### Install it as a command
-
-```bash
-pip install .            # core (zero dependencies)
-pip install .[server]    # + FastAPI/uvicorn for a nicer API server
-pip install .[llm]       # + PyTorch/Transformers for future safetensors weights
-pip install .[llama]     # + llama.cpp for real Luno GGUF weights
-pip install .[dev]       # + pytest for running the test suite
+```
+src/
+  App.tsx                  Chat UI, streaming, conversations
+  components/              Sidebar · Composer · MessageView (markdown + runnable code)
+                           ModelModal (tier picker) · BenchmarkModal (live test)
+  lib/
+    brain.ts               Orchestrator: intent routing + Deep Think pipeline
+    mathEngine.ts          Exact parser, equation solvers, stats, sequences, units
+    codeGen.ts             Verified Python/JS snippets + JS & Python (Pyodide) runners
+    knowledge.ts           Curated knowledge base
+    providers.ts           Groq / OpenRouter / HF / Ollama / custom (OpenAI-compatible, streaming)
+    webllm.ts              In-browser neural models (WebLLM + WebGPU)
+    benchmark.ts           15-question auto-graded live benchmark
+    store.ts               localStorage persistence (chats, settings, per-provider keys)
+tests/                     Automated tests — the public benchmark must pass 15/15
 ```
 
-Then: `luno chat`, `luno ask "…"`, `luno code "…"`, `luno models`, `luno serve`.
+## The honest engineering note
 
----
+No from-scratch model trained on a laptop beats GPT-4/Claude — capability comes from large open-weight models + scaffolding. So Luno doesn't pretend: it **ships the scaffolding and plugs into the strongest models that are genuinely free** (open weights locally, free tiers in the cloud), then adds the planning, tool use and verification that close most of the remaining gap. Every claim in the app is testable: run the benchmark, run the code, check the maths.
 
-## The API (OpenAI-compatible, local)
-
-```bash
-luno serve                         # serves on http://127.0.0.1:8787
-```
-
-| Method | Endpoint                 | Purpose                              |
-|:-------|:-------------------------|:-------------------------------------|
-| GET    | `/`                      | Service info / model status          |
-| GET    | `/health`                | Liveness + which engine is loaded    |
-| GET    | `/v1/models`             | The Luno model family                |
-| POST   | `/v1/chat/completions`   | Chat completion (OpenAI-style)       |
-
-```bash
-curl http://127.0.0.1:8787/v1/chat/completions \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "luno-zero-0.1",
-    "messages": [{"role": "user", "content": "write a python function to reverse a string"}],
-    "max_tokens": 256,
-    "temperature": 0.8
-  }'
-```
-
-It is drop-in compatible with OpenAI's `/v1/chat/completions` shape, so SDKs
-just work — point your `base_url` at `http://127.0.0.1:8787/v1`.
-
----
-
-## Running your own real model (the point of Luno)
-
-1. Train or obtain **Luno Zero 0.1** weights — see [`docs/plan.md`](docs/plan.md).
-2. Put the GGUF here:
-   ```
-   ~/.luno/models/zero/zero-0.1-q4_k_m.gguf
-   ```
-3. Install the llama.cpp backend:
-   ```bash
-   pip install .[llama]
-   ```
-4. Run exactly the same commands. Luno auto-detects the weights and loads
-   them locally — optionally offloading layers to your GPU
-   (`LUNO_N_GPU_LAYERS=-1` for full GPU, `0` for CPU only).
-
----
-
-## Your own model, from scratch
-
-Luno includes a real, from-scratch training pipeline — a small GPT-style
-transformer with hand-written NumPy backpropagation, so nothing is hidden
-behind a framework:
-
-```bash
-pip install numpy
-python -m luno.training.train --epochs 500 --sample     # trains on a demo corpus
-python -m luno.training.train --data mycorpus.txt --out weights/zero-0.1.npz
-```
-
-It is sized to prove the full **data → training → sampling → save** loop on a
-normal CPU in minutes — not to be a production LLM. Scaling that exact loop
-up to real Zero, Mist, and Strato models is described in `docs/plan.md`.
-
----
-
-## Repository layout
-
-```
-luno/
-  cli.py                   # the `luno` command
-  config.py                # paths and defaults (~/.luno)
-  family.py                # the Zero / Mist / Strato model registry
-  model_loader.py          # model name -> running engine (auto weight detection)
-  schema.py                # API request/response models
-  server.py                # local HTTP API (stdlib or FastAPI) + serves the web UI
-  engines/
-    minizero.py            # built-in starter engine (zero dependencies)
-    llama.py               # real GGUF weights via llama.cpp
-    transformers_engine.py # reserved for future safetensors weights
-  training/
-    train.py               # from-scratch transformer training (NumPy backprop)
-    data.py                # corpus + tokenizer helpers
-  data/sneeze.txt          # tiny cleared demo corpus for the trainer
-web/                       # the chat website (React + TypeScript + Vite)
-  src/
-    components/            # Sidebar, ChatView, Composer, Message, CodeBlock, …
-    hooks/                 # conversations, chat streaming, API status
-    lib/                   # API client, local persistence
-  index.html
-  vite.config.ts
-tests/                     # pytest suite (no external deps)
-docs/plan.md               # the roadmap to a truly smart Luno
-.github/workflows/         # CI: deploy the site to GitHub Pages
-```
-
-## Testing
-
-```bash
-pip install .[dev]
-pytest -q
-```
-
----
+*Old Luno (Mini Zero scaffold) was removed in this rebuild; its history remains on the `main` branch's git log.*
 
 ## License
 
-[Apache License 2.0](LICENSE) — free to use, modify, and share. Luno is
-open source so the model *and* the engine are yours. © Dinomax2005.
+MIT — see [LICENSE](LICENSE). Free as in freedom, free as in $0.
