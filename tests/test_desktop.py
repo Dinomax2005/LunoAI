@@ -153,7 +153,7 @@ class DesktopTests(unittest.TestCase):
             (folder / name).mkdir(parents=True)
         self.assertEqual(manager.latest_checkpoint(), folder / "checkpoint-150")
         command = manager.build_command(self.home / "data.jsonl")
-        self.assertEqual(command[:3], ["/usr/bin/python3", "-m", "luno_desktop.train_worker"])
+        self.assertEqual(command[:3], [str(Path("/usr/bin/python3")), "-m", "luno_desktop.train_worker"])
         self.assertEqual(command[command.index("--resume-from") + 1], str(folder / "checkpoint-150"))
         self.assertEqual(command[command.index("--save-steps") + 1], "50")
 
