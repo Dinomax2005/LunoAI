@@ -19,6 +19,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Keep `dist` the single source of truth for the site.
+      #
+      # The repo's Pages setting can still point at a legacy "deploy from a branch"
+      # source (a /docs folder on a stale branch). GitHub's legacy publisher then
+      # races this workflow and can replace a good deploy with an empty site.
+      # Re-point Pages at GitHub Actions on every run so that cannot happen.
+      #
+      # Non-fatal by design: a token without Pages settings access just logs a
+      # warning and the deployment proceeds normally.
+      - name: Point GitHub Pages at this workflow
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
+          auth=(-H "Accept: application/vnd.github+json"
+                -H "Authorization: Bearer ${GITHUB_TOKEN}"
+                -H "X-GitHub-Api-Version: 2022-11-28")
+
+          current=$(curl -sfL "${auth[@]}" "$api" | jq -r '.build_type // "unknown"' || echo unknown)
+          echo "Current Pages build_type: ${current}"
+
+          if [ "${current}" = "workflow" ]; then
+            echo "Pages already builds via GitHub Actions - nothing to change."
+            exit 0
+          fi
+
+          if curl -sfL -X PUT "${auth[@]}" "$api" -d '{"build_type":"workflow"}' > /dev/null; then
+            echo "Switched Pages to GitHub Actions; dist/ is now the published source."
+          else
+            echo "::warning title=GitHub Pages source::Could not switch Pages to GitHub Actions automatically. Do it once by hand: Settings > Pages > Build and deployment > Source > GitHub Actions."
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
