@@ -1,0 +1,109 @@
+name: Build and release Luno Desktop
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing tag to attach installers to
+        required: true
+        default: v5.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: Windows
+          - os: macos-latest
+            platform: macOS
+          - os: ubuntu-latest
+            platform: Linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Ensure Tk libraries on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-tk tk-dev
+      - name: Install build tools and Luno
+        run: python -m pip install pyinstaller .
+      - name: Run stdlib tests
+        run: python -m unittest discover -s tests
+      - name: Verify Tk is available for the GUI
+        run: python -c "import tkinter; print('Tk', tkinter.TkVersion)"
+      - name: Build onedir app
+        run: pyinstaller --noconfirm --clean Luno.spec
+      - name: Smoke test bundled app (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: LUNO_HOME="${{ runner.temp }}/luno-package-smoke" dist/Luno/Luno status
+      - name: Smoke test bundled app (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:LUNO_HOME = Join-Path $env:RUNNER_TEMP 'luno-package-smoke'
+          $app = Start-Process -FilePath 'dist/Luno/Luno.exe' -ArgumentList 'status' -Wait -PassThru
+          if ($app.ExitCode -ne 0) { throw "Bundled Luno exited with $($app.ExitCode)" }
+      - name: Build per-user Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          ISCC installer/windows/LunoSetup.iss
+      - name: Package macOS application
+        if: runner.os == 'macOS'
+        run: |
+          test -d dist/Luno.app
+          (cd dist && zip -qry Luno-macOS.zip Luno.app)
+      - name: Package Linux application
+        if: runner.os == 'Linux'
+        run: tar -czf dist/Luno-linux.tar.gz -C dist Luno
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Luno-${{ matrix.platform }}
+          path: |
+            dist/installer/*.exe
+            dist/*.zip
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Luno-*
+          path: dist
+          merge-multiple: true
+      - name: Arrange release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/installer
+          windows="$(find dist -type f -name 'Luno-Setup-*.exe' -print -quit)"
+          mac="$(find dist -type f -name 'Luno-macOS.zip' -print -quit)"
+          linux="$(find dist -type f -name 'Luno-linux.tar.gz' -print -quit)"
+          test -n "$windows" && test -n "$mac" && test -n "$linux"
+          if [[ "$windows" != dist/installer/* ]]; then mv "$windows" dist/installer/; fi
+          if [[ "$mac" != dist/Luno-macOS.zip ]]; then mv "$mac" dist/; fi
+          if [[ "$linux" != dist/Luno-linux.tar.gz ]]; then mv "$linux" dist/; fi
+          ls -lh dist/installer/*.exe dist/*.zip dist/*.tar.gz
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          files: |
+            dist/installer/*.exe
+            dist/*.zip
+            dist/*.tar.gz
+          fail_on_unmatched_files: true
+          generate_release_notes: true

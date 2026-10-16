@@ -1,101 +1,64 @@
-# Luno — a free AI assistant
+![Luno logo](assets/logo.png)
 
-Luno is a free AI assistant that runs open models in your browser, or connects to free model tiers, and checks its own work before answering. No account, no subscription, no Luno server.
+# Luno Desktop 5.0.0
 
-Open the site and ask something. Maths, code, logic and knowledge work immediately with zero downloads; connect a free 70B-class model (or run one locally on your GPU) for open-ended questions, and Deep Think will plan, draft, verify and correct the answer before you see it.
+Luno is a **local desktop AI app**. Your own PC is the data centre: the model, chats, inference, training and optional service run locally. There is no Luno AI cloud, account, API key or telemetry. The only network access is for packages and open model weights **after you allow downloads**. Once installed, chat inference runs offline.
 
----
+## Download
 
-## The three tiers of free intelligence
+**[Download Luno Desktop from GitHub Releases](https://github.com/Dinomax2005/LunoAI/releases/latest)**
 
-| Tier | What it is | Cost | Setup |
-|---|---|---|---|
-| **Luno Brain** (default) | Built-in exact tools: maths solver, code writer + **in-browser code runner**, logic-puzzle solver, sequences, statistics, unit conversion, summaries, writing drafts, curated knowledge | $0 | None. Works offline |
-| **Local neural** | Real LLMs — Qwen 2.5 (1.5B/3B/7B), Llama 3.2 (1B/3B), Phi 3.5, Gemma 2 — running on **your GPU in this tab** via WebLLM/WebGPU | $0 | One download (0.7–4.3 GB, cached forever). No key, no server, private by design |
-| **Free cloud** | 70B-class giants via free tiers: **Groq** (Llama 3.3 70B, DeepSeek R1 Distill, QwQ), **OpenRouter** (DeepSeek V3/R1 `:free`, Llama 70B `:free`), **Hugging Face**, **Ollama** on your machine, or any OpenAI-compatible endpoint | $0 | Free key (~30 s) where required — stored **only in your browser** |
+- **Windows:** download `Luno-Setup-5.0.0.exe` and run the per-user installer. The desktop shortcut and GUI-at-login tasks are **unchecked** by default.
+- **macOS:** download `Luno-macOS.zip`, extract it, and open `Luno.app`. This unsigned community build may require a one-time approval in Privacy & Security.
+- **Linux:** download `Luno-linux.tar.gz`, extract it, then run `Luno/Luno`. A graphical session with Tk libraries is required.
 
-Switch tiers any time from the model picker at the top. Your conversation history carries over to whichever brain you pick.
+The installer bundles the desktop UI, not a large model. **Python 3.11–3.13 must also be installed on your PC** for the separate per-user inference/training environment (set `LUNO_PYTHON` if it is not on PATH). Python's Tk support is needed for the GUI. Luno Setup creates a venv at your Luno data directory; it never needs administrator rights for the app or login service. Installing `llama-cpp-python` may require a C++ toolchain if a wheel is unavailable for your machine; Setup shows the real error instead of pretending installation succeeded. Builds are currently unsigned.
 
-## Why Luno punches above its weight
+## First run and permissions
 
-1. **It computes, it doesn't guess.** Arithmetic, equations (linear + quadratic), percentages, GCD/LCM, primality, statistics and sequences are solved by a real parser/solver (`src/lib/mathEngine.ts`) — exact answers, every time, with working shown.
-2. **It writes code, then runs it.** Python & JavaScript from a verified template library, plus a **Run** button on every code block (JS instantly; Python via Pyodide in-browser). Deep Think literally executes draft code and fixes what fails.
-3. **Deep Think verification.** For neural models: Luno plans the answer, drafts it, attacks its own draft as a strict verifier (with tool results attached), then writes the corrected final. Self-verification is the single biggest free upgrade to raw model quality.
-4. **Logic-trap immunity.** The classic traps (bat-and-ball, lily-pad doubling, widget rates) are solved algebraically with checks — try them.
-5. **Provable, not promised.** Hit **Benchmark** (top right) and watch Luno take a 15-question auto-graded test — maths, logic, code, knowledge — live in your browser.
+Open **Setup**, choose a model and explicitly select the activities you want, then click **Install / Resume**. All four permissions default to **off**:
 
-## Quick start
+| Permission | What it enables |
+|---|---|
+| Model download | Install local inference packages and download the selected GGUF model |
+| Background service | Permit the loopback service to run outside the GUI |
+| Training | Install training packages and start a separate LoRA worker |
+| Start at login | With background-service consent, register a per-user login service |
 
-```bash
-npm install
-npm run dev        # → http://localhost:5173
-```
+Without model download permission, Luno does not download a model or claim to answer. Chat returns a clear **503** until a local model is installed. The GUI starts a loopback server only while needed for an explicit chat/training action, and stops its own server when closed; that is not an opt-in login service. The HTTP API listens **only** on `127.0.0.1:8765`.
 
-That's it. Ask:
+Setup records every completed step in `state/setup-state.json`. A model downloads into `<model>.gguf.part`, with a `.part.state.json` journal. If power or network fails, the next Install / Resume sends a Range request for the saved bytes. If a server ignores Range, Luno safely restarts that file instead of appending an entire second copy. A trusted SHA-256 is verified when one is provided (the catalogue does not invent checksums). Settings and chats stay in your per-user data directory. Revoke consent in Settings; remove the login service there at any time.
 
-- `What is 847 × 39?` · `Solve 3x + 7 = 22` · `Average of 4, 8, 15, 16, 23, 42`
-- `Write a Python function to check if a number is prime` → then press **Run**
-- `What comes next: 2, 6, 12, 20, 30?`
-- `A bat and a ball cost $1.10 in total…`
-- `Write an email asking for a deadline extension`
-- `Summarize: <paste a long text>`
+Models (Qwen2.5 Instruct Q4_K_M GGUF): **0.5B** (~0.4 GB, minimum 4 GB RAM), **1.5B** (~1.0 GB, minimum 8 GB RAM, default), **3B** (~2.0 GB, minimum 12 GB RAM). These are approximate memory guides, not speed or quality guarantees.
 
-### Get the giants (free, ~30 seconds each)
+## Thinking and training
 
-- **Groq** — free key at [console.groq.com/keys](https://console.groq.com/keys) → pick **Llama 3.3 70B Versatile**
-- **OpenRouter** — free key at [openrouter.ai/keys](https://openrouter.ai/keys) → pick **DeepSeek V3 :free** or **R1 :free**
-- **Hugging Face** — free token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
-- **Local (no key at all)** — model picker → **Local Neural** → Qwen 2.5 3B (needs Chrome/Edge with WebGPU)
-- **Ollama** — `OLLAMA_ORIGINS=* ollama serve` + `ollama pull llama3.2`
+The Chat page sends the **actual saved conversation history** to the local server as the model's context. Thinking levels set real generation budgets: low 180 tokens, medium 420, high 800 across draft/revise, max 1,200 across three candidates and a revision. Candidate scoring uses length/diversity and simple penalties; it is **not** fact-checking. Inference prefers `llama-cpp-python` with the installed GGUF. If unavailable, `transformers` can use **locally cached** Hugging Face weights; it does not silently download weights during chat.
 
-Turn on **🧠 Deep Think** for anything hard. Use **⚡ Fast** for quick chats.
+Training accepts a UTF-8 `.jsonl` file with one `{"text":"..."}` or `{"prompt":"...","response":"..."}` object per line. Enable Training, install its extras, select a dataset and hours budget on the Training page. A separate process uses `transformers.Trainer` + `peft` LoRA, saves full Trainer checkpoints every 50 optimizer steps (keeping the latest 3), and saves a PEFT adapter. Stop or a time limit triggers a checkpoint at the next step; after an interruption, Start / Resume passes the highest `checkpoint-N` to Trainer. Unfinished work since the last checkpoint may need to be repeated after a sudden power cut. LoRA needs the **full HF-format base model as well as the chat GGUF**; its weights may be downloaded only with model-download consent. A completed adapter is applied on the local transformers backend; if that backend/weight cache is missing, Luno reports an error instead of silently using the unadapted GGUF.
 
-## Deploy it free (your own copy, forever)
+**Honest scope:** fine-tuning improves a small local model for your own tasks. It does not train a frontier model from scratch. Frontier models need data-centre pretraining, substantial compute and data. Luno does not claim Claude/ChatGPT-level ability.
 
-This repo auto-deploys to **GitHub Pages** on every push to `main` (`.github/workflows/deploy-pages.yml`):
-
-1. Repo **Settings → Pages → Source: GitHub Actions**
-2. Push to `main` — your Luno is live at `https://<you>.github.io/LunoAI/`
-
-Or host `npm run build` output (`dist/`) on Netlify, Vercel, Cloudflare Pages — any static host. There is no Luno server to pay for. Ever.
-
-## Privacy
-
-- No Luno account, no Luno backend, no telemetry, no analytics.
-- Chats and settings live in your browser's `localStorage` only.
-- Local models never send a byte anywhere. Cloud keys go only to the provider you selected, directly from your browser.
-
-## Development
+## Command line and source checkout
 
 ```bash
-npm run dev      # dev server (0.0.0.0:5173)
-npm run build    # typecheck + production build
-npm test         # brain / math / code / benchmark tests (node:test via tsx)
+python -m luno_desktop status
+python -m luno_desktop setup --model qwen2.5-1.5b --yes  # explicit download consent
+python -m luno_desktop chat --level medium
+python -m luno_desktop serve                   # loopback server, Ctrl-C to stop
+python -m luno_desktop train start --dataset examples.jsonl --hours 2 --epochs 1
+python -m luno_desktop train stop
+python -m luno_desktop train status
+python -m luno_desktop service install         # requires both service + login consent
+python -m luno_desktop service uninstall
+python -m luno_desktop                         # native GUI
 ```
 
-```
-src/
-  App.tsx                  Chat UI, streaming, conversations
-  components/              Sidebar · Composer · MessageView (markdown + runnable code)
-                           ModelModal (tier picker) · BenchmarkModal (live test)
-  lib/
-    brain.ts               Orchestrator: intent routing + Deep Think pipeline
-    mathEngine.ts          Exact parser, equation solvers, stats, sequences, units
-    codeGen.ts             Verified Python/JS snippets + JS & Python (Pyodide) runners
-    knowledge.ts           Curated knowledge base
-    providers.ts           Groq / OpenRouter / HF / Ollama / custom (OpenAI-compatible, streaming)
-    webllm.ts              In-browser neural models (WebLLM + WebGPU)
-    benchmark.ts           15-question auto-graded live benchmark
-    store.ts               localStorage persistence (chats, settings, per-provider keys)
-tests/                     Automated tests — the public benchmark must pass 15/15
+`setup --training` and `setup --background` explicitly grant those respective permissions; `--background` also grants start-at-login. Set `LUNO_HOME` to relocate all user data. Default locations: Windows `%LOCALAPPDATA%\Luno`, macOS `~/Library/Application Support/Luno`, Linux `~/.local/share/luno`. From the source checkout, the stdlib tests need no ML packages:
+
+```bash
+python -m unittest discover -s tests
+LUNO_HOME=/tmp/luno-smoke python -m luno_desktop status
 ```
 
-## The honest engineering note
-
-No from-scratch model trained on a laptop beats GPT-4/Claude — capability comes from large open-weight models + scaffolding. So Luno doesn't pretend: it **ships the scaffolding and plugs into the strongest models that are genuinely free** (open weights locally, free tiers in the cloud), then adds the planning, tool use and verification that close most of the remaining gap. Every claim in the app is testable: run the benchmark, run the code, check the maths.
-
-*Old Luno (Mini Zero scaffold) was removed in this rebuild; its history remains on the `main` branch's git log.*
-
-## License
-
-MIT — see [LICENSE](LICENSE). Free as in freedom, free as in $0.
+See [architecture and recovery details](docs/ARCHITECTURE.md). MIT licensed; see [LICENSE](LICENSE).
