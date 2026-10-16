@@ -21,13 +21,18 @@ jobs:
       - uses: actions/checkout@v4
       # Keep `dist` the single source of truth for the site.
       #
-      # The repo's Pages setting can still point at a legacy "deploy from a branch"
-      # source (a /docs folder on a stale branch). GitHub's legacy publisher then
-      # races this workflow and can replace a good deploy with an empty site.
-      # Re-point Pages at GitHub Actions on every run so that cannot happen.
+      # This repo's Pages setting still points at a legacy "deploy from a branch"
+      # source - a /docs folder on a stale branch that no longer exists. GitHub's
+      # legacy pages-build-deployment publisher therefore races this workflow and
+      # could replace a good deploy with an empty site.
       #
-      # Non-fatal by design: a token without Pages settings access just logs a
-      # warning and the deployment proceeds normally.
+      # Best effort only. GITHUB_TOKEN is granted `pages: write`, which covers
+      # Pages *deployments* but not Pages *site configuration*: GitHub answers this
+      # PUT with 403 "Resource not accessible by integration" (verified in run
+      # 38895690801). Until a maintainer flips
+      # Settings > Pages > Build and deployment > Source to "GitHub Actions" once,
+      # this step leaves a warning annotation on every run as a reminder and then
+      # no-ops forever after. It never fails the deploy.
       - name: Point GitHub Pages at this workflow
         continue-on-error: true
         env:
