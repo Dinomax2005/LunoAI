@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "luno-desktop"
+version = "5.0.0"
+description = "Private, permission-gated local desktop AI assistant"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = {text = "MIT"}
+authors = [{name = "LunoAI contributors"}]
+dependencies = []
+
+[project.optional-dependencies]
+inference = ["llama-cpp-python==0.3.36"]
+training = ["torch", "transformers>=4.46,<5", "peft", "datasets", "accelerate"]
+icons = ["Pillow"]
+
+[project.scripts]
+luno = "luno_desktop.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["luno_desktop*"]
